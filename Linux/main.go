@@ -12,17 +12,12 @@ func check(e error) {
 }
 
 func printhelp(err string){
-	var Red    = "\033[31m"
-	var Reset  = "\033[0m"
-	var Green  = "\033[32m"
-	var Yellow = "\033[33m"
-	var Purple = "\033[35m"
-	var Gray   = "\033[37m"
-	fmt.Println(Red + err + Reset)
+
+	fmt.Println(ColorFmt(err, "Red"))
 	fmt.Println(
-		Green + "Linux PrivEsc Scanner "  + Purple + "- In Development - \n" + Reset +
-		Yellow + "USAGE: " + Reset + "./suidcheck target-directory {stdout | file} [output file]\n\n" +
-		Gray + "This is a work in progress that aims to achieve some of the basic functionality found in tools\nlike https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite in binary form\n")
+		ColorFmt("Linux PrivEsc Scanner ", "Green") + ColorFmt("- In Development - \n", "Purple") +
+		ColorFmt("USAGE: ", "Yellow") + "./suidcheck target-directory {stdout | file} [output file]\n\n" +
+		"This is a work in progress that aims to achieve some of the basic functionality found in tools\nlike https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite in binary form\n")
 }
 
 func main(){
@@ -35,10 +30,10 @@ func main(){
 	if (output_type == "file"){
 		output_file := os.Args[3]
 		fwriter := FindingsWriter{output_file:  output_file, output_type: "file"}
-		checkDirectoryForSuid(&fwriter, check_dir)
+		CheckDirectoryForSuid(&fwriter, check_dir)
 	} else if output_type == "stdout" {
 		fwriter := FindingsWriter{output_type: "stdout"}
-		checkDirectoryForSuid(&fwriter, check_dir)
+		CheckDirectoryForSuid(&fwriter, check_dir)
 	} else {
 		printhelp("No Output Method")
 	}
