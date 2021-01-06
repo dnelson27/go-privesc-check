@@ -1,30 +1,26 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"bufio"
 )
 
 type FindingsWriter struct{
-	output_file string
 	output_type string
+	buffered_writer *bufio.Writer
 }
 
-// 	fwriter.Output(findings: interestingFiles, header: "Interesting Files With SUID Set". headerColor: "Yellow")
-func (fw *FindingsWriter) Output(findings []string, header string, headerColor string){
-	filepath := fw.output_file
-	output_type := fw.output_type
 
+func (fw *FindingsWriter) Output(findings []string, header string, headerColor string){
+	output_type := fw.output_type
+	buffered_writer := fw.buffered_writer
 	switch output_type {
 	case "file":
-		fp, err := os.Create(filepath)
-		check(err)
-		defer fp.Close()
-		fp.WriteString(ColorFmt(header, headerColor))
-		for _, finding := range findings {
-			fp.WriteString(finding + "\n")
+		buffered_writer.WriteString("- - - - - - - - - - - -\n")
+		buffered_writer.WriteString(header + "\n")
+		for _, i := range findings{
+			buffered_writer.WriteString(i + "\n")
 		}
-		fp.Sync()
 	case "stdout":
 		fmt.Println(ColorFmt(header, headerColor))
 		for _, finding := range findings {
@@ -36,7 +32,6 @@ func (fw *FindingsWriter) Output(findings []string, header string, headerColor s
 			fmt.Println(finding)
 		}
 	}
-
 }
 
 func ColorFmt(text, color string) string{
@@ -47,5 +42,13 @@ func ColorFmt(text, color string) string{
 	colors["Yellow"] = "\033[33m"
 	colors["Purple"] = "\033[35m"
 	colors["Gray"]   = "\033[37m"
-	return string(colors[color] + text + colors["reset"])
+	return string(colors[color] + text + colors["Reset"])
+}
+
+
+func FileWrite(w *bufio.Writer, data []string){
+	for _, i := range data {
+		_, err := w.WriteString(i)
+		check(err)
+	}
 }

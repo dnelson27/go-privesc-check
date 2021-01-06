@@ -3,13 +3,16 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"time"
+	"fmt"
+	"strings"
 )
 
-func FindInterestingFiles(findings []string) ([]string, error){
+func FindInterestingFiles(paths []string) ([]string, error){
 	var interestingFiles []string
 	// TODO Probably should replace this with some kind of external data store
 	gtfobinsSuidFiles := []string{
-		"FAKE_FILE","aria2c","arp","ash","base64",
+		"aria2c","arp","ash","base64",
 		"basenc","busybox","capsh","chmod","chown",
 		"column","comm","csh","csplit","cut","dash",
 		"dd","dialog","dmsetup","docker","env","eqn",
@@ -24,18 +27,21 @@ func FindInterestingFiles(findings []string) ([]string, error){
 		"tee","time","timeout","ul","unexpand","unshare",
 		"update-alternatives","uuencode","view","watch","wget","xmodmap",
 		"xxd","zsh","zsoelim"}
-	for _, finding := range findings {
+	for _, path := range paths {
 		for _, gtfobin := range gtfobinsSuidFiles {
-			if finding == gtfobin{
-				interestingFiles = append(interestingFiles, finding)
+			pathsSplit := strings.Split(path, "/")
+			filename := pathsSplit[len(pathsSplit) -1]
+			if filename == gtfobin{
+				interestingFiles = append(interestingFiles, path)
 			}
 		}
 	}
 	return interestingFiles, nil
 }
 
-
 func CheckDirectoryForSuid(fwriter *FindingsWriter, root string){
+	fmt.Printf(ColorFmt("- - - - - - - - - - - -\nStarting SUID Scan In %s Directory\n- - - - - - - - - - - -\n", "Purple"), root)
+	start := time.Now()
 	var findings []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error{
 		if info != nil {
@@ -52,4 +58,6 @@ func CheckDirectoryForSuid(fwriter *FindingsWriter, root string){
 	}
 	fwriter.Output(findings, "All Files With SUID Set", "Green")
 	fwriter.Output(interestingFiles, "Interesting Files With SUID Set", "Yellow")
+	searchTime := []string{time.Since(start).String()}
+	fwriter.Output(searchTime, "Search Time", "Red")
 }
